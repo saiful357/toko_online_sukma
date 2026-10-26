@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Toko Sukamara Online Marketplace</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+  <!-- TOP NAVIGATION HEADER -->
+  <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <!-- Logo & Title -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('home')">
+        <div class="w-10 h-10 bg-white text-emerald-700 rounded-xl flex items-center justify-center font-bold text-xl shadow">
+          <i class="fa-solid me-0 fa-store"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight tracking-wide">TOKO SUKAMARA</h1>
+          <p class="text-xs text-emerald-100 font-light">Pasar Digital Online Sukamara</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons Header -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <button onclick="navigateTo('home')" class="px-3 py-2 text-sm font-medium rounded-lg hover:bg-emerald-600 transition flex items-center gap-2">
+          <i class="fa-solid fa-shop"></i> <span class="hidden sm:inline">Semua Toko</span>
+        </button>
+        <button onclick="openRegisterStoreModal()" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-semibold px-4 py-2 text-sm rounded-lg shadow hover:shadow-md transition flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle"></i> <span>Buka Toko Gratis</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+    
+    <!-- Toast Feedback Alert -->
+    <div id="toastNotification" class="hidden fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 transition-all duration-300">
+      <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+      <span id="toastMessage" class="text-sm font-medium">Pesan pemberitahuan</span>
+    </div>
+
+    <!-- VIEW 1: HOME PAGE / STORE DIRECTORY -->
+    <section id="viewHome" class="space-y-6">
+      <!-- Banner / Search Section -->
+      <div class="bg-gradient-to-r from-emerald-800 to-teal-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+        <div class="relative z-10 max-w-2xl">
+          <h2 class="text-2xl sm:text-3xl font-extrabold mb-2">Cari Products & Toko Lokal Sukamara</h2>
+          <p class="text-emerald-100 text-sm sm:text-base mb-6">Dukung UMKM Sukamara. Pesan langsung via WhatsApp tanpa ribet.</p>
+          
+          <!-- Search & Filter Bar -->
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-grow">
+              <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400"></i>
+              <input type="text" id="searchInput" oninput="renderStores()" placeholder="Cari nama toko, produk, atau layanan..." class="w-full pl-10 pr-4 py-3 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm shadow-inner" />
+            </div>
+            <select id="categoryFilter" onchange="renderStores()" class="py-3 px-4 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm bg-white font-medium cursor-pointer shadow-inner">
+              <option value="ALL">Semua Kategori</option>
+              <option value="Kuliner">Makanan & Minuman</option>
+              <option value="Jasa & Percetakan">Jasa & Percetakan</option>
+              <option value="Sembako & Toko Kelontong">Sembako & Kelontong</option>
+              <option value="Fashion & Pakaian">Fashion & Pakaian</option>
+              <option value="Lainnya">Kategori Lainnya</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Store Cards Grid -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-store text-emerald-600"></i> Daftar Toko Terdaftar
+          </h3>
+          <span id="storeCountBadge" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1 rounded-full">0 Toko</span>
+        </div>
+
+        <div id="storeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Dynamically populated via JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: STORE DETAIL & MANAGEMENT DASHBOARD VIEW -->
+    <section id="viewStoreDetail" class="hidden space-y-6">
+      <!-- Back Navigation Button -->
+      <button onclick="navigateTo('home')" class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-lg transition">
+        <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar Toko
+      </button>
+
+      <!-- Store Header Card -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="flex items-center gap-5">
+          <!-- Store Logo Display with Hover Effect -->
+          <div class="relative group">
+            <div id="dashboardStoreLogoContainer" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-100 flex items-center justify-center shadow-inner">
+              <!-- Rendered via JS -->
+            </div>
+            <button onclick="openChangeLogoModal()" class="absolute inset-0 bg-black/60 text-white font-medium text-xs rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+              <i class="fa-solid fa-camera text-base"></i>
+              <span>Ubah Logo</span>
+            </button>
+          </div>
+
+          <div>
+            <div class="flex items-center gap-3 flex-wrap">
+              <h2 id="dashboardStoreName" class="text-2xl font-bold text-slate-900">Nama Toko</h2>
+              <span id="dashboardStoreCategory" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-md">Kategori</span>
+            </div>
+            <p id="dashboardStoreDesc" class="text-sm text-slate-500 mt-1 max-w-xl">Deskripsi toko...</p>
+            <div class="flex items-center gap-4 text-xs text-slate-600 mt-3">
+              <span class="flex items-center gap-1.5"><i class="fa-brands fa-whatsapp text-emerald-600 text-sm"></i> <span id="dashboardStorePhone">08123456789</span></span>
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-slate-400"></i> <span id="dashboardStoreAddress">Sukamara</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Store Owner Quick Actions -->
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 border-slate-100">
+          <button onclick="openChangeLogoModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2.5 rounded-xl text-sm transition flex items-center justify-center gap-2 border border-slate-300">
+            <i class="fa-solid fa-camera text-slate-500"></i>
+            <span>Ubah Logo</span>
+          </button>
+          <button onclick="openAddProductModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition shadow hover:shadow-md flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Tambah Produk</span>
+          </button>
+          <button onclick="confirmDeleteStore()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold px-4 py-2.5 rounded-xl text-sm transition border border-rose-200 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-trash-can"></i>
+            <span>Hapus Toko</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Products Grid Header -->
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <h3 class="text-xl font-bold text-slate-800">Katalog Produk</h3>
+        <span id="productCountBadge" class="text-xs text-slate-500 font-medium">0 Produk</span>
+      </div>
+
+      <!-- Products Grid -->
+      <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Dynamically populated via JS -->
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL 1: BUKA TOKO BARU -->
+  <div id="modalRegisterStore" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-emerald-700 px-6 py-4 text-white flex items-center justify-between">
+        <h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-store"></i> Pendaftaran Toko Baru</h3>
+        <button onclick="closeModal('modalRegisterStore')" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <form id="formRegisterStore" onsubmit="handleRegisterStore(event)" class="p-6 space-y-4 overflow-y-auto custom-scrollbar">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nama Toko *</label>
+          <input type="text" id="regStoreName" required placeholder="Contoh: Toko Berkah Sukamara" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Kategori Toko *</label>
+          <select id="regStoreCategory" required class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+            <option value="Kuliner">Makanan & Minuman (Kuliner)</option>
+            <option value="Jasa & Percetakan">Jasa & Percetakan / FC</option>
+            <option value="Sembako & Toko Kelontong">Sembako & Kelontong</option>
+            <option value="Fashion & Pakaian">Fashion & Pakaian</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nomor WhatsApp *</label>
+          <input type="tel" id="regStorePhone" required placeholder="081234567890" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <p class="text-[11px] text-slate-400 mt-0.5">Digunakan untuk menerima pesanan dari pembeli.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Alamat Singkat</label>
+          <input type="text" id="regStoreAddress" placeholder="Jl. Pangeran Sukamara No. 12" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Deskripsi Ringkas</label>
+          <textarea id="regStoreDesc" rows="2" placeholder="Menyediakan aneka jajanan dan minuman segar..." class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+        </div>
+
+        <!-- Store Logo Upload Input -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Upload Logo Toko (Opsional)</label>
+          <div class="flex items-center gap-4">
+            <div id="regLogoPreview" class="w-14 h-14 rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 font-bold text-xl overflow-hidden border border-slate-300 flex-shrink-0">
+              <i class="fa-solid fa-image"></i>
+            </div>
+            <div class="flex-grow">
+              <input type="file" id="regStoreLogoFile" accept="image/*" onchange="previewRegisterLogo(event)" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer" />
+              <p class="text-[11px] text-slate-400 mt-1">Jika dilewati, avatar inisial toko akan dibuatkan otomatis.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" onclick="closeModal('modalRegisterStore')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold hover:bg-slate-100">Batal</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow">Daftarkan Toko</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: UBAH LOGO TOKO (DASHBOARD EXCLUSIVE) -->
+  <div id="modalChangeLogo" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+      <div class="bg-slate-800 px-6 py-4 text-white flex items-center justify-between">
+        <h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-camera"></i> Ubah Logo Toko</h3>
+        <button onclick="closeModal('modalChangeLogo')" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <form id="formChangeLogo" onsubmit="handleChangeLogo(event)" class="p-6 space-y-5">
+        <div class="text-center">
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Preview Logo Saat Ini / Baru</label>
+          <div class="relative w-28 h-28 mx-auto rounded-2xl overflow-hidden border-2 border-emerald-500 shadow-md bg-slate-100 flex items-center justify-center">
+            <img id="modalLogoPreviewImg" src="" alt="Preview Logo" class="w-full h-full object-cover hidden" />
+            <div id="modalLogoPreviewBadge" class="w-full h-full flex items-center justify-center font-bold text-3xl text-white">
+              <!-- Initial rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Pilih Gambar Logo Baru *</label>
+          <input type="file" id="changeLogoFileInput" accept="image/*" required onchange="previewChangeLogo(event)" class="w-full text-xs text-slate-500 border border-slate-300 rounded-xl p-2.5 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer" />
+          <p class="text-[11px] text-slate-400 mt-1">Format: JPG, PNG, WEBP (Otomatis dikonversi ke Base64).</p>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" onclick="closeModal('modalChangeLogo')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold hover:bg-slate-100">Batal</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow flex items-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i> Simpan Logo Baru
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: TAMBAH PRODUK BARU -->
+  <div id="modalAddProduct" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-emerald-700 px-6 py-4 text-white flex items-center justify-between">
+        <h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-box"></i> Tambah Produk Baru</h3>
+        <button onclick="closeModal('modalAddProduct')" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <form id="formAddProduct" onsubmit="handleAddProduct(event)" class="p-6 space-y-4 overflow-y-auto custom-scrollbar">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nama Produk *</label>
+          <input type="text" id="prodName" required placeholder="Contoh: Es Teh Solo / Print A4" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Harga (Rp) *</label>
+          <input type="number" id="prodPrice" required placeholder="5000" min="0" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Deskripsi Produk</label>
+          <textarea id="prodDesc" rows="2" placeholder="Penjelasan singkat mengenai produk..." class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+        </div>
+
+        <!-- Product Image Upload -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Foto Produk (Opsional)</label>
+          <div class="flex items-center gap-4">
+            <div id="prodImagePreview" class="w-16 h-16 rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 font-bold overflow-hidden border border-slate-300 flex-shrink-0">
+              <i class="fa-solid fa-box text-xl"></i>
+            </div>
+            <div class="flex-grow">
+              <input type="file" id="prodImageFile" accept="image/*" onchange="previewProductImage(event)" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer" />
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" onclick="closeModal('modalAddProduct')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold hover:bg-slate-100">Batal</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow">Simpan Produk</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 mt-12">
+    <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+      <p class="font-medium text-slate-300">TOKO SUKAMARA ONLINE &copy; 2026 - Marketplace UMKM Kabupaten Sukamara</p>
+      <p>Mendukung digitalisasi pedagang dan usaha lokal Sukamara.</p>
+    </div>
+  </footer>
+
+  <!-- APPLICATION LOGIC SCRIPT -->
+  <script>
+    // --- LOCAL STORAGE KEY ---
+    const STORAGE_KEY = 'sukamara_toko_list';
+
+    // Global Active State
+    let stores = [];
+    let currentStoreId = null;
+
+    // Temporary variables for image Base64 processing
+    let tempRegisterLogoBase64 = '';
+    let tempChangeLogoBase64 = '';
+    let tempProductImageBase64 = '';
+
+    // Color palettes for automatic Avatar Badges
+    const badgeColors = [
+      'from-emerald-500 to-teal-700',
+      'from-blue-500 to-indigo-700',
+      'from-amber-500 to-orange-700',
+      'from-rose-500 to-red-700',
+      'from-purple-500 to-violet-700'
+    ];
+
+    // --- INITIAL MOCK DATA PROVIDER ---
+    const MOCK_INITIAL_STORES = [
+      {
+        id: 'st-photocopy-borobudur',
+        name: 'Photocopy Borobudur',
+        category: 'Jasa & Percetakan',
+        phone: '081255544332',
+        address: 'Jl. Tjilik Riwut No. 04, Sukamara',
+        desc: 'Melayani Jasa Fotokopi, Jilid Buku, Laminating, Cetak Foto, dan Alat Tulis Kantor Lengkap.',
+        logoUrl: '',
+        products: [
+          {
+            id: 'p-101',
+            name: 'Cetak Dokumen A4 (Hitam Putih)',
+            price: 500,
+            desc: 'Cetak print lembaran kertas HVS A4 berkualitas.',
+            imageUrl: 'https://images.unsplash.com/photo-1588072432836-e10032774350?w=400&auto=format&fit=crop&q=80'
+          },
+          {
+            id: 'p-102',
+            name: 'Jilid Spiral Kawat',
+            price: 15000,
+            desc: 'Jilid rapim berpenutup mika bening depan belakang.',
+            imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80'
+          }
+        ]
+      },
+      {
+        id: 'st-makanan-borobudur',
+        name: 'Makanan Borobudur Sukamara',
+        category: 'Kuliner',
+        phone: '082199887766',
+        address: 'Samping Alun-Alun Sukamara',
+        desc: 'Menyajikan aneka masakan khas, Nasi Goreng Spesial, Bakso, dan Ayam Lalapan lezat.',
+        logoUrl: '',
+        products: [
+          {
+            id: 'p-201',
+            name: 'Nasi Goreng Spesial Telur',
+            price: 18000,
+            desc: 'Nasi goreng harum dengan bumbu rempah dan telur mata sapi.',
+            imageUrl: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&auto=format&fit=crop&q=80'
+          },
+          {
+            id: 'p-202',
+            name: 'Ayam Bakar Madu + Nasi',
+            price: 25000,
+            desc: 'Ayam bakar manis gurih disajikan lengkap dengan sambal terasi dan lalapan.',
+            imageUrl: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=400&auto=format&fit=crop&q=80'
+          }
+        ]
+      },
+      {
+        id: 'st-minuman-borobudur',
+        name: 'Minuman Borobudur & Es Segar',
+        category: 'Kuliner',
+        phone: '085211223344',
+        address: 'Jl. Nila, Sukamara',
+        desc: 'Pusat es boba, es teh jumbo, jus buah segar, dan aneka minuman kekinian.',
+        logoUrl: '',
+        products: [
+          {
+            id: 'p-301',
+            name: 'Es Teh Jumbo Fresh',
+            price: 5000,
+            desc: 'Es teh manis dingin porsi besar pelepas dahaga.',
+            imageUrl: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&auto=format&fit=crop&q=80'
+          },
+          {
+            id: 'p-302',
+            name: 'Jus Alpukat Kocok',
+            price: 12000,
+            desc: 'Alpukat mentega asli dikocok manis dengan susu cokelat.',
+            imageUrl: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=400&auto=format&fit=crop&q=80'
+          }
+        ]
+      }
+    ];
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+      loadStoresFromStorage();
+      renderStores();
+    };
+
+    function loadStoresFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          stores = JSON.parse(raw);
+        } else {
+          stores = MOCK_INITIAL_STORES;
+          saveStoresToStorage();
+        }
+      } catch (err) {
+        console.error('Error loading localStorage:', err);
+        stores = MOCK_INITIAL_STORES;
+      }
+    }
+
+    function saveStoresToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stores));
+      } catch (err) {
+        console.error('Error saving localStorage:', err);
+        showToast('Gagal menyimpan ke penyimpanan lokal! Ukuran gambar mungkin terlalu besar.', 'error');
+      }
+    }
+
+    // --- NAVIGATION ROUTER ---
+    function navigateTo(viewName, storeId = null) {
+      const viewHome = document.getElementById('viewHome');
+      const viewStoreDetail = document.getElementById('viewStoreDetail');
+
+      if (viewName === 'home') {
+        currentStoreId = null;
+        viewHome.classList.remove('hidden');
+        viewStoreDetail.classList.add('hidden');
+        renderStores();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (viewName === 'detail' && storeId) {
+        currentStoreId = storeId;
+        viewHome.classList.add('hidden');
+        viewStoreDetail.classList.remove('hidden');
+        renderStoreDashboard(storeId);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // --- LOGO HELPER RENDERER ---
+    function getLogoHTML(store, sizeClass = "w-16 h-16", textSize = "text-xl") {
+      const colorIndex = Math.abs(hashCode(store.name)) % badgeColors.length;
+      const gradient = badgeColors[colorIndex];
+      const initial = store.name.charAt(0).toUpperCase();
+
+      if (store.logoUrl && store.logoUrl.trim() !== '') {
+        return `<img src="${store.logoUrl}" alt="${store.name}" class="${sizeClass} object-cover rounded-2xl shadow-sm border border-slate-200" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'${sizeClass} rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white font-bold ${textSize} shadow-sm\'>${initial}</div>';" />`;
+      } else {
+        return `<div class="${sizeClass} rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white font-bold ${textSize} shadow-sm border border-white/20">${initial}</div>`;
+      }
+    }
+
+    function hashCode(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return hash;
+    }
+
+    // --- RENDER STORE DIRECTORY (HOME PAGE) ---
+    function renderStores() {
+      const storeGrid = document.getElementById('storeGrid');
+      const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+      const catVal = document.getElementById('categoryFilter').value;
+
+      const filtered = stores.filter(st => {
+        const matchesSearch = st.name.toLowerCase().includes(searchVal) || 
+                              st.desc.toLowerCase().includes(searchVal) ||
+                              st.products.some(p => p.name.toLowerCase().includes(searchVal));
+        const matchesCat = (catVal === 'ALL') || (st.category === catVal);
+        return matchesSearch && matchesCat;
+      });
+
+      document.getElementById('storeCountBadge').textContent = `${filtered.length} Toko`;
+
+      if (filtered.length === 0) {
+        storeGrid.innerHTML = `
+          <div class="col-span-full bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300">
+            <i class="fa-solid fa-store-slash text-4xl text-slate-300 mb-3"></i>
+            <p class="text-slate-600 font-semibold">Tidak ada toko yang ditemukan</p>
+            <p class="text-xs text-slate-400 mt-1">Coba kata kunci lain atau daftarkan toko baru.</p>
+          </div>
+        `;
+        return;
+      }
+
+      storeGrid.innerHTML = filtered.map(st => `
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between">
+          <div class="p-5">
+            <div class="flex items-start gap-4">
+              <!-- Store Card Logo rendering -->
+              <div class="flex-shrink-0">
+                ${getLogoHTML(st, "w-14 h-14", "text-xl")}
+              </div>
+              <div class="flex-grow min-w-0">
+                <span class="inline-block bg-emerald-50 text-emerald-700 font-semibold text-[11px] px-2.5 py-0.5 rounded-md mb-1 border border-emerald-100">
+                  ${st.category}
+                </span>
+                <h4 class="font-bold text-slate-900 truncate text-base hover:text-emerald-700 cursor-pointer" onclick="navigateTo('detail', '${st.id}')">
+                  ${st.name}
+                </h4>
+                <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                  <i class="fa-solid fa-location-dot text-slate-400"></i> ${st.address || 'Sukamara'}
+                </p>
+              </div>
+            </div>
+            
+            <p class="text-xs text-slate-600 mt-3 line-clamp-2 leading-relaxed">
+              ${st.desc || 'Tidak ada deskripsi toko.'}
+            </p>
+          </div>
+
+          <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500">
+              <i class="fa-solid fa-box text-emerald-600 mr-1"></i> ${st.products.length} Produk
+            </span>
+            <button onclick="navigateTo('detail', '${st.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+              <span>Kunjungi Toko</span> <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // --- RENDER STORE DASHBOARD & PRODUCTS ---
+    function renderStoreDashboard(storeId) {
+      const store = stores.find(s => s.id === storeId);
+      if (!store) {
+        navigateTo('home');
+        return;
+      }
+
+      // Update Header Details
+      document.getElementById('dashboardStoreName').textContent = store.name;
+      document.getElementById('dashboardStoreCategory').textContent = store.category;
+      document.getElementById('dashboardStoreDesc').textContent = store.desc || 'Tidak ada deskripsi toko.';
+      document.getElementById('dashboardStorePhone').textContent = store.phone;
+      document.getElementById('dashboardStoreAddress').textContent = store.address || 'Sukamara';
+
+      // Update Header Logo Image
+      const logoContainer = document.getElementById('dashboardStoreLogoContainer');
+      logoContainer.innerHTML = getLogoHTML(store, "w-full h-full", "text-3xl");
+
+      // Render Products
+      const productGrid = document.getElementById('productGrid');
+      const productCountBadge = document.getElementById('productCountBadge');
+      
+      productCountBadge.textContent = `${store.products.length} Produk`;
+
+      if (store.products.length === 0) {
+        productGrid.innerHTML = `
+          <div class="col-span-full bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300">
+            <i class="fa-solid fa-box-open text-4xl text-slate-300 mb-3"></i>
+            <p class="text-slate-600 font-semibold">Belum Ada Produk Ditambahkan</p>
+            <p class="text-xs text-slate-400 mt-1 mb-4">Mulai tambahkan produk jualan toko Anda sekarang.</p>
+            <button onclick="openAddProductModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl shadow transition inline-flex items-center gap-2">
+              <i class="fa-solid fa-plus"></i> Tambah Produk Pertama
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      productGrid.innerHTML = store.products.map(p => {
+        const formatPrice = new Intl.NumberFormat('id-ID').format(p.price);
+        const waMsg = encodeURIComponent(`Halo ${store.name}, saya ingin membeli produk "${p.name}" (Rp ${formatPrice}). Apakah masih tersedia?`);
+        const cleanPhone = store.phone.replace(/[^0-9]/g, '').replace(/^0/, '62');
+        const waLink = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${waMsg}`;
+
+        return `
+          <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div>
+              <div class="h-44 bg-slate-100 overflow-hidden relative">
+                ${p.imageUrl ? 
+                  `<img src="${p.imageUrl}" alt="${p.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/e2e8f0/64748b?text=Foto+Produk'" />` : 
+                  `<div class="w-full h-full flex items-center justify-center text-slate-300 bg-slate-100"><i class="fa-solid fa-image text-4xl"></i></div>`
+                }
+              </div>
+              <div class="p-4">
+                <h4 class="font-bold text-slate-900 text-base leading-snug mb-1">${p.name}</h4>
+                <p class="text-emerald-700 font-extrabold text-lg mb-2">Rp ${formatPrice}</p>
+                <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">${p.desc || 'Tidak ada deskripsi produk.'}</p>
+              </div>
+            </div>
+
+            <div class="p-4 pt-0 flex items-center gap-2">
+              <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i class="fa-brands fa-whatsapp text-sm"></i> <span>Beli via WA</span>
+              </a>
+              <button onclick="confirmDeleteProduct('${p.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2.5 rounded-xl text-xs transition border border-rose-200 flex items-center justify-center" title="Hapus Produk">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- UBAH LOGO FUNCTIONALITY & FILE READERS ---
+
+    function previewRegisterLogo(event) {
+      const file = event.target.files[0];
+      const previewDiv = document.getElementById('regLogoPreview');
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          tempRegisterLogoBase64 = e.target.result;
+          previewDiv.innerHTML = `<img src="${tempRegisterLogoBase64}" class="w-full h-full object-cover" />`;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        tempRegisterLogoBase64 = '';
+        previewDiv.innerHTML = `<i class="fa-solid fa-image"></i>`;
+      }
+    }
+
+    function openChangeLogoModal() {
+      const store = stores.find(s => s.id === currentStoreId);
+      if (!store) return;
+
+      tempChangeLogoBase64 = '';
+      document.getElementById('changeLogoFileInput').value = '';
+
+      const imgPreview = document.getElementById('modalLogoPreviewImg');
+      const badgePreview = document.getElementById('modalLogoPreviewBadge');
+
+      if (store.logoUrl) {
+        imgPreview.src = store.logoUrl;
+        imgPreview.classList.remove('hidden');
+        badgePreview.classList.add('hidden');
+      } else {
+        imgPreview.classList.add('hidden');
+        badgePreview.classList.remove('hidden');
+        const colorIndex = Math.abs(hashCode(store.name)) % badgeColors.length;
+        badgePreview.className = `w-full h-full flex items-center justify-center font-bold text-3xl text-white bg-gradient-to-br ${badgeColors[colorIndex]}`;
+        badgePreview.textContent = store.name.charAt(0).toUpperCase();
+      }
+
+      openModal('modalChangeLogo');
+    }
+
+    function previewChangeLogo(event) {
+      const file = event.target.files[0];
+      const imgPreview = document.getElementById('modalLogoPreviewImg');
+      const badgePreview = document.getElementById('modalLogoPreviewBadge');
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          tempChangeLogoBase64 = e.target.result;
+          imgPreview.src = tempChangeLogoBase64;
+          imgPreview.classList.remove('hidden');
+          badgePreview.classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handleChangeLogo(event) {
+      event.preventDefault();
+      
+      if (!tempChangeLogoBase64) {
+        showToast('Silakan pilih berkas gambar logo terlebih dahulu.', 'error');
+        return;
+      }
+
+      const storeIndex = stores.findIndex(s => s.id === currentStoreId);
+      if (storeIndex !== -1) {
+        stores[storeIndex].logoUrl = tempChangeLogoBase64;
+        saveStoresToStorage();
+        renderStoreDashboard(currentStoreId);
+        closeModal('modalChangeLogo');
+        showToast('Logo toko berhasil diperbarui! 🎉');
+      }
+    }
+
+    // --- STORE REGISTRATION SUBMISSION ---
+    function handleRegisterStore(event) {
+      event.preventDefault();
+
+      const name = document.getElementById('regStoreName').value.trim();
+      const category = document.getElementById('regStoreCategory').value;
+      const phone = document.getElementById('regStorePhone').value.trim();
+      const address = document.getElementById('regStoreAddress').value.trim();
+      const desc = document.getElementById('regStoreDesc').value.trim();
+
+      const newStore = {
+        id: 'st-' + Date.now(),
+        name,
+        category,
+        phone,
+        address,
+        desc,
+        logoUrl: tempRegisterLogoBase64 || '',
+        products: []
+      };
+
+      stores.unshift(newStore);
+      saveStoresToStorage();
+
+      document.getElementById('formRegisterStore').reset();
+      document.getElementById('regLogoPreview').innerHTML = `<i class="fa-solid fa-image"></i>`;
+      tempRegisterLogoBase64 = '';
+
+      closeModal('modalRegisterStore');
+      showToast('Toko berhasil didaftarkan!');
+      navigateTo('detail', newStore.id);
+    }
+
+    // --- ADD PRODUCT LOGIC ---
+    function previewProductImage(event) {
+      const file = event.target.files[0];
+      const previewDiv = document.getElementById('prodImagePreview');
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          tempProductImageBase64 = e.target.result;
+          previewDiv.innerHTML = `<img src="${tempProductImageBase64}" class="w-full h-full object-cover" />`;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        tempProductImageBase64 = '';
+        previewDiv.innerHTML = `<i class="fa-solid fa-box text-xl"></i>`;
+      }
+    }
+
+    function handleAddProduct(event) {
+      event.preventDefault();
+
+      const name = document.getElementById('prodName').value.trim();
+      const price = parseFloat(document.getElementById('prodPrice').value);
+      const desc = document.getElementById('prodDesc').value.trim();
+
+      const storeIndex = stores.findIndex(s => s.id === currentStoreId);
+      if (storeIndex !== -1) {
+        const newProd = {
+          id: 'p-' + Date.now(),
+          name,
+          price,
+          desc,
+          imageUrl: tempProductImageBase64 || ''
+        };
+
+        stores[storeIndex].products.unshift(newProd);
+        saveStoresToStorage();
+
+        document.getElementById('formAddProduct').reset();
+        document.getElementById('prodImagePreview').innerHTML = `<i class="fa-solid fa-box text-xl"></i>`;
+        tempProductImageBase64 = '';
+
+        closeModal('modalAddProduct');
+        renderStoreDashboard(currentStoreId);
+        showToast('Produk baru berhasil ditambahkan!');
+      }
+    }
+
+    // --- HAPUS TOKO DAN PRODUK ---
+    function confirmDeleteStore() {
+      const store = stores.find(s => s.id === currentStoreId);
+      if (!store) return;
+
+      const isConfirmed = confirm(`Apakah Anda yakin ingin menghapus toko "${store.name}"? Tindakan ini tidak dapat dibatalkan dan semua produk di dalam toko ini akan ikut terhapus.`);
+      
+      if (isConfirmed) {
+        stores = stores.filter(s => s.id !== currentStoreId);
+        saveStoresToStorage();
+        navigateTo('home');
+        showToast('Toko berhasil dihapus.', 'success');
+      }
+    }
+
+    function confirmDeleteProduct(productId) {
+      const storeIndex = stores.findIndex(s => s.id === currentStoreId);
+      if (storeIndex === -1) return;
+
+      const store = stores[storeIndex];
+      const product = store.products.find(p => p.id === productId);
+      if (!product) return;
+
+      const isConfirmed = confirm(`Apakah Anda yakin ingin menghapus produk "${product.name}"?`);
+      if (isConfirmed) {
+        stores[storeIndex].products = store.products.filter(p => p.id !== productId);
+        saveStoresToStorage();
+        renderStoreDashboard(currentStoreId);
+        showToast('Produk berhasil dihapus.', 'success');
+      }
+    }
+
+    // --- MODAL UTILITIES ---
+    function openRegisterStoreModal() {
+      tempRegisterLogoBase64 = '';
+      document.getElementById('formRegisterStore').reset();
+      document.getElementById('regLogoPreview').innerHTML = `<i class="fa-solid fa-image"></i>`;
+      openModal('modalRegisterStore');
+    }
+
+    function openAddProductModal() {
+      tempProductImageBase64 = '';
+      document.getElementById('formAddProduct').reset();
+      document.getElementById('prodImagePreview').innerHTML = `<i class="fa-solid fa-box text-xl"></i>`;
+      openModal('modalAddProduct');
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    // --- TOAST FEEDBACK ALERT ---
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.textContent = message;
+
+      if (type === 'error') {
+        toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400 text-lg';
+      } else {
+        toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
